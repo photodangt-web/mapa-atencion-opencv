@@ -5,13 +5,13 @@ from matplotlib import pyplot as plt
 
 
 def generate_attention_map(frame):
-    # Convertir la imagen a escala de grises
+    # Imagen a escala grises
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    # Aplicar el algoritmo de Shi-Tomasi para detectar esquinas
+    # ejecución del algoritmo de Shi-Tomasi, sirve para detectar las esquinas de la imagen que se va analizar
     corners = cv2.goodFeaturesToTrack(gray, maxCorners=100, qualityLevel=0.01, minDistance=10)
 
-    # Crear una imagen en blanco para el mapa de atención
+    # Función para crear una imagen en blanco, sirve para obtener los puntos de atención
     attention_map = np.zeros_like(frame, dtype=np.uint8)
 
     # Iterar sobre las esquinas detectadas y dibujar círculos en el mapa de atención
@@ -24,12 +24,9 @@ def generate_attention_map(frame):
 
         for corner in corners:
             x, y = corner.ravel()
-            # Definir el radio del círculo basado en la importancia del punto
             radius = 50
             color = (255, 0, 0)  # Rojo por defecto
-            # Calcular la distancia al centro, considerado el punto de mayor atención
             distance = np.hypot(center_x - x, center_y - y)
-            # Clasificar los puntos en tres niveles de atención según su distancia al centro de la imagen
             if distance < high_attention_limit:  # Puntos de interés alto (rojo)
                 color = (0, 0, 255)
             elif distance < medium_attention_limit:  # Puntos de interés medio (verde)
@@ -37,14 +34,14 @@ def generate_attention_map(frame):
             # Dibujar el círculo
             cv2.circle(attention_map, (x, y), radius, color, -1)
 
-    # Aplicar un desenfoque gaussiano al mapa de atención para suavizar los bordes
+    # desenfoque gaussiano para mapa de atención y suavizar los bordes
     attention_map = cv2.GaussianBlur(attention_map, (75, 75), 0)
 
     return attention_map
 
 
 def main():
-    # Descargar la imagen desde el enlace
+    # Colocar aquí la imagen que se analizará  
     image_url = 'https://raw.githubusercontent.com/opencv/opencv/master/samples/data/lena.jpg'
     response = requests.get(image_url, timeout=30)
     response.raise_for_status()
@@ -52,7 +49,7 @@ def main():
     if image is None:
         raise ValueError("No se pudo decodificar la imagen descargada")
 
-    # Generar el mapa de atención
+    # Generación del mapa de atención
     attention_map = generate_attention_map(image)
 
     output_heatmap_path = 'imagen_con_mapa_de_atencion.png'
